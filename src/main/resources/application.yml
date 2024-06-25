@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: quoting-vk-bot
+
+server:
+  base-path: /vk_bot
+
+vk:
+  confirmation:
+    address:
+      code: ENC(1mwbPkObiMqr7JukFDNCtQstgEtdY3rDMRB8tx9/e3g=)
+  group:
+    id: 226335516
+
+jasypt:
+  encryptor:
+    password: ${VK_JASYPT_SECRET}
+    algorithm: PBEWithMD5AndDES

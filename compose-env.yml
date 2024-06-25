@@ -1,0 +1,20 @@
+version: '3.4'
+services:
+  quoting-vk-bot:
+    image: niksob/quoting-vk-bot:quoting-vk-bot-1.0.0
+    ports:
+      - '8080:8080'
+    secrets:
+      - vk_jasypt_secret
+    networks:
+      - bot-main-network
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+
+secrets:
+  vk_jasypt_secret:
+    external: true
+
+networks:
+  bot-main-network:
+    external: true
