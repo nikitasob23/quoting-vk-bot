@@ -1,8 +1,0 @@
-### POST Request
-POST http://localhost:8080/callback/confirmation
-Content-Type: application/json
-
-{
-  "type": "confirmation",
-  "group_id": 226335516
-}

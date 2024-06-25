@@ -1,8 +1,0 @@
-### POST Request
-POST https://moodtracker.ru/vk_bot/callback/confirmation
-Content-Type: application/json
-
-{
-  "type": "confirmation",
-  "group_id": 226335516
-}

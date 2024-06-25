@@ -1,0 +1,8 @@
+### Address confirmation
+POST https://moodtracker.ru/vk_bot/callback
+Content-Type: application/json
+
+{
+  "type": "confirmation",
+  "group_id": 226335516
+}

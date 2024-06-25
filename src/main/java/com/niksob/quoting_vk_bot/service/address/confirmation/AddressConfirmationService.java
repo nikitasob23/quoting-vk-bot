@@ -1,9 +1,9 @@
 package com.niksob.quoting_vk_bot.service.address.confirmation;
 
-import com.niksob.quoting_vk_bot.model.vk.group.confirmation.VkGroupConfirmation;
-import com.niksob.quoting_vk_bot.model.vk.group.confirmation.code.ConfirmationCode;
+import com.niksob.quoting_vk_bot.model.group.GroupId;
+import com.niksob.quoting_vk_bot.model.callback.ConfirmationCode;
 import reactor.core.publisher.Mono;
 
 public interface AddressConfirmationService {
-    Mono<ConfirmationCode> confirm(VkGroupConfirmation vkGroupConfirmation);
+    Mono<ConfirmationCode> confirm(GroupId groupId);
 }
