@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.niksob</groupId>
     <artifactId>quoting-vk-bot</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>quoting-vk-bot</name>
     <description>quoting-vk-bot</description>
     <url/>
@@ -57,7 +57,20 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <optional>true</optional>
+            <version>1.18.32</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Logging -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.13</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.5.6</version>
         </dependency>
 
         <!-- Map Struct -->
@@ -71,6 +84,13 @@
             <artifactId>mapstruct-processor</artifactId>
             <version>1.5.3.Final</version>
             <scope>provided</scope>
+        </dependency>
+
+        <!-- Secret encryption -->
+        <dependency>
+            <groupId>com.github.ulisesbocchio</groupId>
+            <artifactId>jasypt-spring-boot-starter</artifactId>
+            <version>3.0.5</version>
         </dependency>
 
     </dependencies>
