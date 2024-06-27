@@ -6,3 +6,45 @@ Content-Type: application/json
   "type": "confirmation",
   "group_id": 226335516
 }
+
+### Incomming message
+POST https://moodtracker.ru/vk_bot/callback
+Content-Type: application/json
+
+{
+  "type": "message_new",
+  "object": {
+    "message": {
+      "date": 1719385094,
+      "from_id": 154640822,
+      "id": 32,
+      "out": 0,
+      "version": 10000063,
+      "attachments": [],
+      "conversation_message_id": 32,
+      "fwd_messages": [],
+      "important": false,
+      "is_hidden": false,
+      "peer_id": 154640822,
+      "random_id": 0,
+      "text": "Ого..."
+    },
+    "client_info": {
+      "button_actions": [
+        "text",
+        "vkpay",
+        "open_app",
+        "location",
+        "open_link",
+        "callback",
+        "intent_subscribe",
+        "intent_unsubscribe"
+      ],
+      "keyboard": true,
+      "inline_keyboard": true,
+      "carousel": true,
+      "lang_id": 0
+    }
+  },
+  "groupId": 226335516
+}
