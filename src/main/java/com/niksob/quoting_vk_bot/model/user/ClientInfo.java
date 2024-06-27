@@ -1,4 +1,4 @@
-package com.niksob.quoting_vk_bot.model.callback;
+package com.niksob.quoting_vk_bot.model.user;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

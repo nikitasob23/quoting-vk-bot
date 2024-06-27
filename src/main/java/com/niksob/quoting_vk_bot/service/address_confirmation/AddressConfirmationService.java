@@ -1,4 +1,4 @@
-package com.niksob.quoting_vk_bot.service.address.confirmation;
+package com.niksob.quoting_vk_bot.service.address_confirmation;
 
 import com.niksob.quoting_vk_bot.model.group.GroupId;
 import com.niksob.quoting_vk_bot.model.callback.ConfirmationCode;

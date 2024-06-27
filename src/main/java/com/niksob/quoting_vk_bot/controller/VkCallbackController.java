@@ -24,7 +24,8 @@ import static com.niksob.quoting_vk_bot.value.CallbackEventType.CONFIRMATION;
 @Slf4j
 @AllArgsConstructor
 @RequestMapping(BASE_URI)
-public class CallbackController {
+public class VkCallbackController {
+
     private final AddressConfirmationService addressConfirmationService;
 
     @Qualifier("callbackControllerLogger")

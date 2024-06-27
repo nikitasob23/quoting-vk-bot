@@ -1,4 +1,4 @@
-package com.niksob.quoting_vk_bot.service.address.confirmation;
+package com.niksob.quoting_vk_bot.service.address_confirmation;
 
 import com.niksob.quoting_vk_bot.exception.address_confirmation.AddressConfirmationException;
 import com.niksob.quoting_vk_bot.model.group.GroupId;
@@ -15,8 +15,8 @@ public class AddressConfirmationServiceImpl implements AddressConfirmationServic
     private final GroupId appGroupId;
 
     public AddressConfirmationServiceImpl(
-            @Value("${vk.confirmation.address.code}") String code,
-            @Value("${vk.group.id}") Integer groupId
+            @Value("${vk.confirmation.code}") String code,
+            @Value("${vk.confirmation.group_id}") Integer groupId
     ) {
         this.code = new ConfirmationCode(code);
         this.appGroupId = new GroupId(groupId);
