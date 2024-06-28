@@ -78,6 +78,10 @@ public class VkCallbackController {
     }
 
     private void setResourceUri(Throwable e) {
-        ((ResourceException) e).setResource(BASE_URI);
+        if (e instanceof ResourceException) {
+            ((ResourceException) e).setResource(BASE_URI);
+            return;
+        }
+        throw new ResourceException(BASE_URI, e);
     }
 }

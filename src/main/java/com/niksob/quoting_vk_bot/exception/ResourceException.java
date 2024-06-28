@@ -16,4 +16,9 @@ public class ResourceException extends RuntimeException {
         super(message);
         this.resource = resource;
     }
+
+    public ResourceException(String resource, Throwable cause) {
+        super(cause);
+        this.resource = resource;
+    }
 }

@@ -41,6 +41,25 @@ public class CallbackControllerExceptionHandler {
         return createErrorResponse(e, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @ExceptionHandler(ResourceException.class)
+    public ResponseEntity<ErrorDetails> handleResourceException(ResourceException e) {
+        return createErrorResponse(e, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorDetails> handleGenericException(Exception e) {
+        final HttpStatus httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+        final ErrorDetails errorDetails = new ErrorDetails(
+                DateTimeUtil.getTimestamp(),
+                httpStatus.value(),
+                httpStatus.getReasonPhrase(),
+                e.getMessage(),
+                null
+        );
+        controllerLogger.error(null, httpStatus, e);
+        return ResponseEntity.status(httpStatus).body(errorDetails);
+    }
+
     private ResponseEntity<ErrorDetails> createErrorResponse(ResourceException e, HttpStatus httpStatus) {
         final ErrorDetails errorDetails = new ErrorDetails(
                 DateTimeUtil.getTimestamp(),
