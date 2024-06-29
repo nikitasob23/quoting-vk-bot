@@ -1,8 +1,0 @@
-### Address confirmation
-POST http://localhost:8080/callback
-Content-Type: application/json
-
-{
-  "type": "confirmation",
-  "group_id": 226335516
-}
