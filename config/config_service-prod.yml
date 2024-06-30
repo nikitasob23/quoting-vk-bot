@@ -1,0 +1,25 @@
+server:
+  port: 9191
+
+repo:
+  remote:
+    git:
+      uri: https://github.com/nikitasob23/quoting-vk-bot-config.git
+      properties-file: merge_properties
+  local:
+    git:
+      path: app/git_configs
+    config:
+      path: app/service_configs
+
+spring:
+  cloud:
+    config:
+      server:
+        native:
+          search-locations: ${repo.local.config.path}
+
+jasypt:
+  encryptor:
+    password: ${VK_JASYPT_SECRET}
+    algorithm: PBEWithMD5AndDES
