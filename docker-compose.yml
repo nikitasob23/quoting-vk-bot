@@ -1,0 +1,36 @@
+version: '3.4'
+services:
+  config-service:
+    image: niksob/vk-bot:config-service-1.0.0
+    secrets:
+      - vk_jasypt_secret
+    networks:
+      - vk-config-network
+    volumes:
+      - /root/vk-bot/config-service/config/application.yml:/app/application.yml
+    environment:
+      SPRING_PROFILES_ACTIVE: prod,native
+      SPRING_CONFIG_LOCATION: app/application.yml
+
+  quoting-service:
+    image: niksob/vk-bot:quoting-service-2.0.0
+    ports:
+      - '8080:8080'
+    secrets:
+      - vk_jasypt_secret
+    networks:
+      - vk-config-network
+    volumes:
+      - /root/vk-bot/quoting-service/config/application.yml:/app/application.yml
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_CONFIG_LOCATION: app/application.yml
+    entrypoint: [ "/bin/sh", "-c", "until curl -f http://config-service:9191/quoting_service/default; do echo 'Waiting for config-service'; sleep 7; done; app/start_app.sh app/quoting-service-2.0.0.jar"]
+
+secrets:
+  vk_jasypt_secret:
+    external: true
+
+networks:
+  vk-config-network:
+    external: true

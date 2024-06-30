@@ -2,4 +2,4 @@ spring:
   application:
     name: quoting_service
   config:
-    import: configserver:http://localhost:9191
+    import: configserver:http://config-service:9191
