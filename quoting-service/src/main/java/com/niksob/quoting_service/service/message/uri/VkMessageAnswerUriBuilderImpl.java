@@ -7,8 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
 
-import java.util.UUID;
-
 import static com.niksob.quoting_service.value.MessageSendingKey.*;
 
 @Service
@@ -21,7 +19,7 @@ public class VkMessageAnswerUriBuilderImpl implements VkMessageAnswerUriBuilder 
     public BodyInserters.FormInserter<String> buildRequestWithParams(UserMessageDetails userMessageDetails) {
         final BodyInserters.FormInserter<String> formInserter =
                 BodyInserters.fromFormData(USER_ID, String.valueOf(userMessageDetails.getUserId().getValue()))
-                        .with(RANDOM_ID, String.valueOf(UUID.randomUUID().hashCode()))
+                        .with(RANDOM_ID, String.valueOf(System.currentTimeMillis()))
                         .with(MESSAGE, vkMessageDetailsConfig.getMessageTemplate()
                                 .formatted(userMessageDetails.getText()))
                         .with(V, vkMessageDetailsConfig.getApiVersion());
