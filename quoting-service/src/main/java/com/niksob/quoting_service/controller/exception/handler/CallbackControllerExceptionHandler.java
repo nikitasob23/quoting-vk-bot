@@ -26,7 +26,7 @@ public class CallbackControllerExceptionHandler {
     @Qualifier("callbackControllerLogger")
     private final BaseControllerLogger controllerLogger;
 
-    @Value("${server.base-path}")
+    @Value("${server.base-path:}")
     private String basePath;
 
     @ExceptionHandler(AddressConfirmationException.class)

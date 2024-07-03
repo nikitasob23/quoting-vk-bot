@@ -1,36 +1,36 @@
-# Config-service Guide
+# Руководство сервиса config-service
 Open API v1.0.0
 
-## Overview
-This microservice retrieves application settings from a GitHub repository, forms them into a single configuration file for each microservice according to specified rules, and delivers them upon request in JSON format.
+## Обзор:
+Данный микросервис получает настройки приложения из github репозитория, по инструкции формирует из них по одному общему файлу конфигурации для каждого микросервиса и отправляет их по запросу в формате JSON.
 
-## Dependencies
-The config-service project utilizes the following Maven dependencies to ensure functionality, configuration management, and other key aspects of the service:
+## Зависимости:
+Проект config-service использует следующие Maven зависимости для обеспечения функциональности, управление конфигурациями и других ключевых аспектов сервиса:
 
-### Spring Boot
-1. **Spring Boot Starter** - dependency for enabling Spring functionalities
-2. **Spring Boot Starter Test** - library for testing support
+### Spring boot:
+1. **Spring Boot Starter** - зависимость, обеспечивающая работу Spring
+2. **Spring boot starter test** - библиотека для работы с тестами
 
-### Configuration Retrieval, Formation, and Delivery
-1. **Config Server** - serves as a centralized repository for configuration files and provides an API for fetching them. In this project, the Config Server plays a crucial role in managing and distributing configurations for all microservices, enabling centralized configuration management and simplifying maintenance when configuration changes are needed.
-2. **Git Connector** - library providing an API for interacting with the GitHub repository where configuration files are stored
-3. **Yaml** - library that allows combining multiple settings from downloaded configurations into the few files needed for microservice operations
+### Скачивание, формирование и отправка конфигураций:
+1. **Config server** - является централизованным хранилищем конфигурационных файлов и предоставляет API для их извлечения. В нашем проекте Config Server играет ключевую роль в управлении и распределении конфигураций для всех микросервисов. Это позволяет централизованно управлять настройками и упрощает обслуживание при изменениях в конфигурации.
+2. **Git connector** - библиотека, предоставляющая API для взаимодействия с github репозиторием, в котором находятся файлы конфигурации
+3. **Yaml** - библиотека, позволяющая компоновать из множества настроек в скаченных конфигурациях лишь несколько файлов, необходимых для работы микросервисов.
 
-### Logging
-**Logback** - the standard logging system used in the microservice
+### Логирование:
+**Logback** - в микросервисе используется стандартная система логирования Spring
 
-### Miscellaneous
-**Lombok** - used to reduce boilerplate code
+### Прочее:
+**Lombok** - используется для уменьшения количества шаблонного кода
 
-## Configuration
-### 1. Loading Configurations from the GitHub Repository
-The microservice initially loads configuration files from a private GitHub repository.
-```yaml
+## Конфигурация:
+### 1. Загрузка конфигураций из github репозитория:
+Для начала микросервис загружает файлы конфигурации из приватного репозитория github 
+```
 repo:
   remote:
     git:
-      uri: https://github.com/nikitasob23/my-mood-tracker-config.git
-      username: nikitasob23
+      uri: https://github.com/nikitasob23/quoting-vk-bot-config
+      username: [USERNAME]
       password: [PASSWORD]
       properties-file: merge_properties
   local:
@@ -39,14 +39,14 @@ repo:
     config:
       path: app/service_configs
 ```
-1. **repo.remote.git.uri** - GitHub repository URL
-2. **repo.remote.git.username** and **repo.remote.git.password** - GitHub login and password for access
-3. **repo.remote.git.properties-file** - the name of the file containing rules for creating configuration files for each microservice
-4. **repo.local.git.path** - local directory for storing the Git repository
-5. **repo.local.config.path** - local directory where the configuration files for microservices will be stored
+1. **repo.remote.git.uri** - адрес до github репозитория 
+2. **repo.remote.git.username** и **repo.remote.git.password** - логин и пароль github для доступа к приватному репозиторию
+3. **repo.remote.git.properties-file** - это название файла с правилами, по которым создаются файлы конфигурации для каждого микросервиса
+4. **repo.local.git.path** - локальная директория для хранения git репозитория
+5. **repo.local.config.path** - локальная директория, в которой будут храниться файлы конфигурации, предназначенные для микросервисов.
 
-Example `properties-file.yml`:
-```yaml
+Пример properties-file.yml:
+```
 database_service:
   - logger
   - database_connection
@@ -70,11 +70,11 @@ gateway_service:
   - mail_sender_connection
   - gateway_properties
 ```
-The file names listed in the arrays are actual files in the repository. Settings from these files will be compiled and added to `database_service.yml`, `authorization_service.yml`, `mail_sender.yml`, `gateway_service.yml`, and then sent to the microservices upon request.
+Названия файлов, представленные в виде списков - это фактические файлы, которые находятся в репозитории. Настройки из данных файлов будут скомпонованы и добавлены в **database_service.yml, authorization_service.yml, mail_sender.yml, gateway_service.yml** и далее оправлены по запросу в микросервисы.  
 
-### 2. Spring Cloud
-config-service downloads configurations from the remote git repository, then compiles the settings for the microservices. Spring Cloud then retrieves these ready-made configurations and distributes them to the microservices. To enable this, specify the **_native_** profile when starting the application and the directory where the configuration files are stored:
-```yaml
+### 2. Spring cloud
+config-service скачивает конфигурации из удаленного git репозитория, затем компонует настройки для микросервисов. Далее Spring cloud должен брать готовые настройки и передавать их микросервисам. Для этого нужно указать **_native_** профиль при запуске приложения и директорию, откуда нужно брать файлы конфигурации:
+```
 spring:
   cloud:
     config:
@@ -83,10 +83,10 @@ spring:
           search-locations: file:///${repo.local.config.path}
 ```
 
-With these minimal settings in place, the service is ready to operate.
+После указания данных минимальный настроек сервис готов к работе.
 
-### Additional Documentation Links
-For more information, please refer to the following sections:
+### Дополнительные ссылки на документацию
+Для получения дополнительной информации, пожалуйста, ознакомьтесь со следующими разделами:
 
 * [Official Apache Maven documentation](https://maven.apache.org/guides/index.html)
 * [Spring Boot Maven Plugin Reference Guide](https://docs.spring.io/spring-boot/docs/3.1.5/maven-plugin/reference/html/)

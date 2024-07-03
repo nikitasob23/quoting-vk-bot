@@ -1,9 +1,9 @@
-# Руководство по использованию quoting-vk-bot
+# Руководство по использованию quoting-service
 
 ## Краткое описание
 
 Данный проект представляет собой VK бота, который цитирует сообщения пользователей в переписке. Проект разработан в соответствии с [тестовым заданием](https://docs.google.com/document/d/1x_EEtb1AbU83dlJHVnI4GYkoSnGmXYmzqoM6q_BceF0/edit).
-Приложение размещено на сервере [moodtracker.ru/vk_bot](moodtracker.ru/vk_bot). Чтобы воспользоваться функциями бота, необходимо написать сообщение в [сообщество](https://vk.com/mygreatquotesss). 
+Приложение размещено на сервере [moodtracker.ru/vk_bot](#https://moodtracker.ru/vk_bot). Чтобы воспользоваться функциями бота, необходимо написать сообщение в [сообщество](https://vk.com/mygreatquotesss). 
 После этого бот автоматически отправит вам цитату из вашего сообщения.
 
 ## Деплой
@@ -14,46 +14,78 @@ docker-compose.yml
 ```yaml
 version: '3.4'
 services:
-  quoting-vk-bot:
-    image: niksob/quoting-vk-bot:quoting-vk-bot-1.0.0
+  config-service:
+    image: niksob/vk-bot:config-service-1.0.0
+    secrets:
+      - vk_jasypt_secret
+    networks:
+      - vk-config-network
+    volumes:
+      - /root/vk-bot/config-service/config/application.yml:/app/application.yml
+    environment:
+      SPRING_PROFILES_ACTIVE: prod,native
+      SPRING_CONFIG_LOCATION: app/application.yml
+
+  quoting-service:
+    image: niksob/vk-bot:quoting-service-2.0.0
     ports:
       - '8080:8080'
     secrets:
       - vk_jasypt_secret
     networks:
-      - bot-main-network
+      - vk-config-network
+    volumes:
+      - /root/vk-bot/quoting-service/config/application.yml:/app/application.yml
     environment:
       SPRING_PROFILES_ACTIVE: prod
+      SPRING_CONFIG_LOCATION: app/application.yml
+    entrypoint: [ "/bin/sh", "-c", "until curl -f http://config-service:9191/quoting_service/default; do echo 'Waiting for config-service'; sleep 7; done; app/start_app.sh app/quoting-service-2.0.0.jar"]
 
 secrets:
   vk_jasypt_secret:
     external: true
 
 networks:
-  bot-main-network:
+  vk-config-network:
     external: true
 ```
-В данном файле описан сервис quoting-vk-bot. 
+В данном файле описан сервис quoting-service. 
 Объявлен секрет vk_jasypt_secret, содержащий ключ для дешифровки чувствительных данных, и сеть bot-main-network для работы сервиса. 
 Приложение доступно на порту 8080.
+Так же описан config-service - микросервис, который скачивает файлы конфигураций из репозитория и передает их quoting-service. 
+Более подробно можно ознакомиться в **config-service/README.md**   
 
-Dockerfile:
-
+quoting-service Dockerfile:
 ```Dockerfile
 FROM alpine:3.19.1
 
 RUN apk update
 RUN apk add --no-cache openjdk17
+RUN apk add --no-cache curl
 
-COPY target/quoting-vk-bot-1.0.0.jar app/quoting-vk-bot-1.0.0.jar
+COPY quoting-service/target/quoting-service-2.0.0.jar app/quoting-service-2.0.0.jar
 COPY ../scripts/docker/start_container_app.sh app/start_app.sh
 
 RUN chmod +x /app/start_app.sh
 
-ENTRYPOINT ["app/start_app.sh", "app/quoting-vk-bot-1.0.0.jar"]
+ENTRYPOINT ["app/start_app.sh", "app/quoting-service-2.0.0.jar"]
 ```
 Докер-образ создается на основе легковесной версии Linux: [alpine](https://hub.docker.com/_/alpine). 
 Устанавливается JDK, копируется jar-файл приложения и скрипт для запуска.
+
+config-service Dockerfile:
+```Dockefile
+FROM alpine:3.19.1
+
+RUN apk update && apk add --no-cache openjdk17
+
+COPY config-service/target/config-service-1.0.0.jar app/config-service-1.0.0.jar
+COPY scripts/docker/start_container_app.sh app/start_app.sh
+
+RUN chmod +x /app/start_app.sh
+
+ENTRYPOINT ["app/start_app.sh", "app/config-service-1.0.0.jar"]
+```
 
 Скрипт запуска приложения:
 ```shell
@@ -86,9 +118,10 @@ fi
 ### Прочее
 1. **Lombok** - используется для уменьшения шаблонного кода
 2. **MapStruct** - фреймворк для маппинга разных моделей и сущностей, уменьшает количество кода и потенциальных ошибок при преобразовании данных
+3. **config-service** - сервис, предоставляющий конфигурационный файл 
 
 
-## Конфигурация
+## Локальная конфигурация
 ### 1. Настройки VK
 ```yaml
 vk:
@@ -114,6 +147,7 @@ jasypt:
 Все чувствительные данные помещаются в ENC(). 
 Данные будут автоматически расшифровываться по мере необходимости. 
 
+### 3. Базовый путь
 ```yaml
 server:
   base-path: /vk_bot
@@ -122,28 +156,32 @@ server:
 Все запросы по этому пути фильтруются и перенаправляются Nginx-ом на порт, на котором запущен контейнер приложения. 
 Эта настройка нужна для корректного отображения пути в сообщениях об ошибках.
 
+### 4. Данные для подключения к серверу конфигурации
 ```yaml
 spring:
   application:
-    name: quoting-vk-bot
+    name: quoting_service
+  config:
+    import: configserver:http://config-service:9191
 ```
-Имя приложения.
+Файлы конфигурации, необходимые для запуска микросервисов и подключения к удаленному репозиторию с другими настройками, находятся в директории: **_/config_**. 
+
 
 ## Работа приложения
 Работа приложения основана на Callback API от VK. 
 Приложение имеет единственный контроллер и метод по ссылке **/callback**:
 ```java
-    @PostMapping
-    public Mono<ResponseEntity<String>> handleEvent(@RequestBody CallbackEvent callbackEvent) {
-        log.info("Getting callback event: {}", callbackEvent);
-        final String callbackType = callbackEvent.getType();
-        if (CONFIRMATION.equals(callbackType)) {
-            return confirm(callbackEvent);
-        } else if (MESSAGE_NEW.equals(callbackType)) {
-            return sendQuotingMessage(callbackEvent);
-        }
-        throw new NotImplementedException("Bot cannot process this type of request", BASE_URI);
+@PostMapping
+public Mono<ResponseEntity<String>> handleEvent(@RequestBody CallbackEvent callbackEvent) {
+    log.info("Getting callback event: {}", callbackEvent);
+    final String callbackType = callbackEvent.getType();
+    if (CONFIRMATION.equals(callbackType)) {
+        return confirm(callbackEvent);
+    } else if (MESSAGE_NEW.equals(callbackType)) {
+        return sendQuotingMessage(callbackEvent);
     }
+    throw new NotImplementedException("Bot cannot process this type of request");
+}
 ```
 Метод обрабатывает два типа запросов:
 
@@ -232,21 +270,17 @@ Connection: keep-alive
 public class SendVkMessageServiceImpl implements SendVkMessageService {
     private final VkMessageAnswerUriBuilder messageAnswerBuilder;
 
+    @Qualifier("vkSendMessageWebClient")
+    private final WebClient vkSendMessageWebClient;
+
     @Override
     public Mono<Void> send(UserMessageDetails userMessageDetails) {
-        return createVkMessageWebClient().post()
+        return vkSendMessageWebClient.post()
                 .body(messageAnswerBuilder.buildRequestWithParams(userMessageDetails))
                 .retrieve()
                 .bodyToMono(Void.class)
                 .doOnSuccess(response -> log.info("Message sent successfully: {}", userMessageDetails))
                 .doOnError(e -> log.error("Error during message sending: {}", userMessageDetails, e));
-    }
-
-    private WebClient createVkMessageWebClient() {
-        return WebClient.builder()
-                .baseUrl(SEND_METHOD)
-                .defaultHeader("Content-Type", MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-                .build();
     }
 }
 ```
@@ -322,3 +356,127 @@ access_token={{access_token}}
 ```
 
 Если на метод контроллера пришло событие неизвестного типа, то возвращается 501 NOT_IMPLEMENTED
+
+## Инструкция по упрощенному запуску quoting-service
+### 1. Скачивание приложения с репозитория:
+```shell
+git clone https://github.com/nikitasob23/vk-bot.git
+```
+
+### 2. Добавление минимальной конфигурации для запуска
+Добавьте в файл: quoting-service/src/main/resources/application.yml настройки:
+```yaml
+spring:
+  application:
+    name: quoting_service
+
+  # отключение использования config-service (при необходимости)
+  cloud:
+    config:
+      enabled: false
+
+vk:
+  token: # Добавьте ваш токен от vk сообщества
+  api_version: 5.199
+  message_template: "Вы сказали: %s"
+  confirmation:
+    group_id: # id вашего vk сообщества
+    code: # код подтверждения вашего vk сообщества
+
+# отключение шифрования jasypt (при необходимости)
+jasypt:
+  encryptor:
+    password: ''
+```
+
+### 3. Запуск приложения
+При запуске из среды разработки, все готово, можно приступать.
+
+При запуске jar файла, его нужно сначала создать:
+```shell
+mvn -f quoting-service/pom.xml clean package
+```
+
+Затем можно запустить, указав нужный файл конфигурации:
+```shell
+java -jar quoting-service/target/quoting-service-2.0.0.jar --spring.config.location=file:/config/application.yml
+```
+Вуаля, сервис работает с вашими настройками!
+
+
+## Инструкция по полноценному запуску
+(Но без использования Docker Swarm)
+
+### 1. Скачивание приложения с репозитория:
+```shell
+git clone https://github.com/nikitasob23/vk-bot.git
+```
+
+### 2. Добавление конфигурации для запуска
+
+Добавьте в файл: config-service/src/main/resources/application.yml настройки:
+```yaml
+server:
+  port: # порт для запуска приложения
+
+repo:
+  remote:
+    git:
+      uri: # Ссылка на github репозиторий с настройками (с форматом настроек можете ознакомиться в config-service/README)
+      properties-file: # Название файла (без .yml) для слияния нужных настроек, расположенных в удаленном репозитории
+  local:
+    git:
+      path: # Локальный путь для скачивания настроек
+    config:
+      path: # Локальный путь до собранных настроек для каждого микросервиса
+
+spring:
+  cloud:
+    config:
+      server:
+        native:
+          search-locations: # Локальный путь до собранных настроек для каждого микросервиса 
+
+# отключение шифрования jasypt (при необходимости)
+jasypt:
+  encryptor:
+    password: ''
+```
+
+Добавьте в файл: quoting-service/src/main/resources/application.yml настройки:
+```yaml
+spring:
+  application:
+    name: quoting_service
+  config:
+    import: configserver:http://localhost # Добавьте порт, на котором запущен config-service 
+
+vk:
+  token: # Добавьте ваш токен от vk сообщества
+  api_version: 5.199
+  message_template: "Вы сказали: %s"
+  confirmation:
+    group_id: # id вашего vk сообщества
+    code: # код подтверждения вашего vk сообщества
+
+# отключение шифрования jasypt (при необходимости)
+jasypt:
+  encryptor:
+    password: ''
+```
+
+### 3. Запуск приложения
+При запуске из среды разработки, все готово, можно приступать.
+
+При запуске jar файла, их нужно сначала создать:
+```shell
+mvn -f quoting-service/pom.xml clean package
+mvn -f config-service/pom.xml clean package
+```
+
+Затем можно запустить, указав нужный файл конфигурации:
+```shell
+java -jar config-service/target/config-service-1.0.0.jar --spring.config.location=file:/config/config_service/application.yml
+java -jar quoting-service/target/quoting-service-2.0.0.jar --spring.config.location=file:/config/quoting_service/application.yml
+```
+Важно запускать jar по очереди! Без config-service приложения бота не запустится.

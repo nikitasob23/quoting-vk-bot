@@ -37,7 +37,7 @@ public class VkCallbackControllerTest {
     @Autowired
     private WebTestClient webTestClient;
 
-    @Value("${server.base-path}")
+    @Value("${server.base-path:}")
     private String basePath;
     @Value("${vk.confirmation.code}")
     private String code;
