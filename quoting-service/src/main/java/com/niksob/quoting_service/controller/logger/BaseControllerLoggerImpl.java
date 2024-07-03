@@ -20,7 +20,9 @@ public class BaseControllerLoggerImpl implements BaseControllerLogger {
 
     @Override
     public void error(String path, HttpStatus httpStatus, Throwable e) {
-        ((ResourceException) e).setResource(baseAppPath + path);
+        if (e instanceof ResourceException resourceException) {
+            resourceException.setResource(baseAppPath + path);
+        }
         log.error("Controller return failed https status: {}", httpStatus, e);
     }
 }
