@@ -1,5 +1,6 @@
 package com.niksob.quoting_service.controller.exception.handler;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.niksob.quoting_service.controller.logger.BaseControllerLogger;
 import com.niksob.quoting_service.exception.ResourceException;
 import com.niksob.quoting_service.exception.request.BadRequestException;
@@ -12,8 +13,11 @@ import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ServerWebInputException;
 
 @RestControllerAdvice
 @AllArgsConstructor
@@ -58,6 +62,31 @@ public class CallbackControllerExceptionHandler {
         );
         controllerLogger.error(null, httpStatus, e);
         return ResponseEntity.status(httpStatus).body(errorDetails);
+    }
+
+    @ExceptionHandler(ServerWebInputException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<ErrorDetails> handleServerWebInputException(ServerWebInputException ex, ServerHttpRequest request) {
+        final ErrorDetails errorDetails = new ErrorDetails(
+                DateTimeUtil.getTimestamp(),
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                ex.getReason(),
+                request.getURI().getPath()
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorDetails);
+    }
+
+    @ExceptionHandler(JsonProcessingException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorDetails handleJsonProcessingException(JsonProcessingException ex, ServerHttpRequest request) {
+        return new ErrorDetails(
+                DateTimeUtil.getTimestamp(),
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                ex.getOriginalMessage(),
+                request.getURI().getPath()
+        );
     }
 
     private ResponseEntity<ErrorDetails> createErrorResponse(ResourceException e, HttpStatus httpStatus) {
