@@ -1,20 +1,20 @@
-package com.niksob.quoting_service.config.vk;
+package com.niksob.quoting_service.config.message.send;
 
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import static com.niksob.quoting_service.uri.vk.send.VkUri.SEND_METHOD;
-
-@Profile("!test")
-@Configuration
-public class VkSendMessageWebClientConfig {
+@Profile("test")
+@TestConfiguration
+public class VkSendMessageWebClientTestConfig {
+    @Primary
     @Bean("vkSendMessageWebClient")
-    public WebClient getVkSendMessageWebClient() {
+    public WebClient getTestVkSendMessageWebClient() {
         return WebClient.builder()
-                .baseUrl(SEND_METHOD)
+                .baseUrl("TEST_SEND_METHOD")
                 .defaultHeader("Content-Type", MediaType.APPLICATION_FORM_URLENCODED_VALUE)
                 .build();
     }

@@ -1,7 +1,6 @@
 package com.niksob.quoting_service.controller;
 
 import com.niksob.quoting_service.controller.logger.BaseControllerLogger;
-import com.niksob.quoting_service.exception.ResourceException;
 import com.niksob.quoting_service.exception.request.NotImplementedException;
 import com.niksob.quoting_service.mapper.callback.CallbackEventMapper;
 import com.niksob.quoting_service.model.callback.CallbackEvent;
@@ -47,7 +46,7 @@ public class VkCallbackController {
         } else if (MESSAGE_NEW.equals(callbackType)) {
             return sendQuotingMessage(callbackEvent);
         }
-        throw new NotImplementedException("Bot cannot process this type of request", BASE_URI);
+        throw new NotImplementedException("Bot cannot process this type of request");
     }
 
     private Mono<ResponseEntity<String>> confirm(CallbackEvent callbackEvent) {
@@ -55,8 +54,7 @@ public class VkCallbackController {
         return addressConfirmationService.confirm(groupId)
                 .map(ConfirmationCode::getValue)
                 .map(confirmCode -> ResponseEntity.status(HttpStatus.OK).body(confirmCode))
-                .doOnSuccess(code -> controllerLogger.info(HttpStatus.OK))
-                .doOnError(this::setResourceUri);
+                .doOnSuccess(code -> controllerLogger.info(HttpStatus.OK));
     }
 
     private Mono<ResponseEntity<String>> sendQuotingMessage(CallbackEvent callbackEvent) {
@@ -65,8 +63,7 @@ public class VkCallbackController {
                     final UserMessageDetails messageDetails = callbackEventMapper.toUserMessageDetails(callbackEvent);
                     sendQuotingMessage(messageDetails);
                 })
-                .doOnSuccess(okResponse -> log.info("Controller return success https status: {}", okResponse))
-                .doOnError(this::setResourceUri);
+                .doOnSuccess(okResponse -> log.info("Controller return success https status: {}", okResponse));
     }
 
     private void sendQuotingMessage(UserMessageDetails userMessageDetails) {
@@ -75,13 +72,5 @@ public class VkCallbackController {
                 .doOnSuccess(code -> controllerLogger.info(HttpStatus.OK))
                 .doOnError(e -> controllerLogger.error(BASE_URI, HttpStatus.BAD_REQUEST, e))
                 .subscribe();
-    }
-
-    private void setResourceUri(Throwable e) {
-        if (e instanceof ResourceException) {
-            ((ResourceException) e).setResource(BASE_URI);
-            return;
-        }
-        throw new ResourceException(BASE_URI, e);
     }
 }

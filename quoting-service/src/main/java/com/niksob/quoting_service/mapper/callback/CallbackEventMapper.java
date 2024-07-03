@@ -35,7 +35,7 @@ public abstract class CallbackEventMapper {
 
     public UserMessageDetails toUserMessageDetails(CallbackEvent callbackEvent) {
         if (!(callbackEvent.getObject() instanceof LinkedHashMap map)) {
-            throw new BadRequestException("Illegal state of callback event: object field must be LinkedHashMap type");
+            throw new BadRequestException("Illegal state of callback event: missing or incorrect object field");
         }
         final Message message = objectMapper.convertValue(map.get(MESSAGE_KEY), Message.class);
         return fromMessage(message);

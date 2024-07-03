@@ -16,7 +16,6 @@
     <name>vk-bot</name>
     <description>vk-bot</description>
 
-
     <packaging>pom</packaging>
     <modules>
         <module>quoting-service</module>

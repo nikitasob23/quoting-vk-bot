@@ -1,13 +1,7 @@
 package com.niksob.quoting_service.exception.request;
 
-import com.niksob.quoting_service.exception.ResourceException;
-
-public class BadRequestException extends ResourceException {
+public class BadRequestException extends RuntimeException {
     public BadRequestException(String message) {
         super(message);
-    }
-
-    public BadRequestException(String message, String resource) {
-        super(message, resource);
     }
 }
